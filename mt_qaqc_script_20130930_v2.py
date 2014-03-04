@@ -14,40 +14,34 @@ import arcpy, os, sys, string
 
 # Script arguments
 inNTIACur = arcpy.GetParameterAsText(0)
-if inNTIACur == '#' or not inNTIACur:
-    inNTIACur = "Z:\\Broadband\\BBMT\\NTIA_Deliverables\\Submission_20130930\\MT_SBDD_2013_09_30.gdb" # provide a default value if unspecified
 
 inNTIAPrev = arcpy.GetParameterAsText(1)
-if inNTIAPrev == '#' or not inNTIAPrev:
-    inNTIAPrev = "Z:\\Broadband\\BBMT\\NTIA_Deliverables\\Submission_20130401\\MT_SBDD_2013_04_01.gdb" # provide a default value if unspecified
 
 outGDB = arcpy.GetParameterAsText(2)
-if outGDB == '#' or not outGDB:
-    outGDB = "Z:\\Broadband\\BBMT\\Provider_Update\\201309\\MT_QAQC_20130930.gdb\\" # provide a default value if unspecified
 
 
 # Local variables:
 
 calcSumFldFreq = "[PROVNAME] & \"_\" & [DBANAME] & \"_\" & [FRN] & \"_\" & [TRANSTECH] & \"_\" & [SPECTRUM] & \"_\" & [MAXADDOWN] & \"_\" & [MAXADUP] & \"_\" & [FREQUENCY]"
 calcSumFldProv = "[PROVNAME] & \"_\" & [DBANAME] & \"_\" & [FRN] & \"_\" & [TRANSTECH] & \"_\" & [SPECTRUM] & \"_\" & [FREQUENCY]"
-tblMergCur = outGDB + "tbl_temp_merge_cur_wired_wireless"
-tblMergPrev = outGDB + "tbl_temp_merge_prev_wired_wireless"
-tblSumMergCur1 = outGDB + "tbl_temp_sum_merge_cur_wired_wireless_freq"
-tblSumMergCur2 = outGDB + "tbl_temp_sum_merge_cur_wired_wireless_prov"
-tblSumMergPrev1 = outGDB + "tbl_temp_sum_merge_prev_wired_wireless_freq"
-tblSumMergPrev2 = outGDB + "tbl_temp_sum_merge_prev_wired_wireless_prov"
-tblMergCurPrev1 = outGDB + "tbl_temp_merge_cur_prev_wired_wireless_freq"
-tblMergCurPrev2 = outGDB + "tbl_temp_merge_cur_prev_wired_wireless_prov"
-tblSumMergCurPrev1 = outGDB + "tbl_temp_sum_merge_cur_prev_wired_wireless_freq"
-tblSumMergCurPrev2 = outGDB + "tbl_temp_sum_merge_cur_prev_wired_wireless_prov"
-tblChgNTIAFeat = outGDB + "tbl_final_NTIA_change_detection_feat_cnt"
-tblChgNTIAFeatProv = outGDB + "tbl_final_NTIA_change_detection_provider_tot"
-tblSumProvTot = outGDB + "tbl_final_NTIA_summary_provider_transtech"
-tblView1 = outGDB + "tbl_temp_merge_cur_prev_wired_wireless_freq_view"
-tblView2 = outGDB + "tbl_temp_merge_cur_prev_wired_wireless_prov_view"
-tblChkGeoFinal = outGDB + "tbl_final_NTIA_chk_geo"
-tblTempIden = outGDB + "tbl_temp_findIdentical"
-tblTempIdenSum = outGDB + "tbl_temp_findIdentical_sum"
+tblMergCur = outGDB + "\\tbl_temp_merge_cur_wired_wireless"
+tblMergPrev = outGDB + "\\tbl_temp_merge_prev_wired_wireless"
+tblSumMergCur1 = outGDB + "\\tbl_temp_sum_merge_cur_wired_wireless_freq"
+tblSumMergCur2 = outGDB + "\\tbl_temp_sum_merge_cur_wired_wireless_prov"
+tblSumMergPrev1 = outGDB + "\\tbl_temp_sum_merge_prev_wired_wireless_freq"
+tblSumMergPrev2 = outGDB + "\\tbl_temp_sum_merge_prev_wired_wireless_prov"
+tblMergCurPrev1 = outGDB + "\\tbl_temp_merge_cur_prev_wired_wireless_freq"
+tblMergCurPrev2 = outGDB + "\\tbl_temp_merge_cur_prev_wired_wireless_prov"
+tblSumMergCurPrev1 = outGDB + "\\tbl_temp_sum_merge_cur_prev_wired_wireless_freq"
+tblSumMergCurPrev2 = outGDB + "\\tbl_temp_sum_merge_cur_prev_wired_wireless_prov"
+tblChgNTIAFeat = outGDB + "\\tbl_final_NTIA_change_detection_feat_cnt"
+tblChgNTIAFeatProv = outGDB + "\\tbl_final_NTIA_change_detection_provider_tot"
+tblSumProvTot = outGDB + "\\tbl_final_NTIA_summary_provider_transtech"
+tblView1 = outGDB + "\\tbl_temp_merge_cur_prev_wired_wireless_freq_view"
+tblView2 = outGDB + "\\tbl_temp_merge_cur_prev_wired_wireless_prov_view"
+tblChkGeoFinal = outGDB + "\\tbl_final_NTIA_chk_geo"
+tblTempIden = outGDB + "\\tbl_temp_findIdentical"
+tblTempIdenSum = outGDB + "\\tbl_temp_findIdentical_sum"
 statFields = [["PROVNAME", "FIRST"]]
 caseFldFreq = ["PROVNAME", "DBANAME", "FRN", "TRANSTECH", "SPECTRUM", "MAXADDOWN", "MAXADUP", "FILENAME", "VERSION", "SUMFREQ" ]
 caseFldProv = ["PROVNAME", "DBANAME", "FRN", "TRANSTECH", "SPECTRUM", "FILENAME", "VERSION", "SUMPROV" ]
@@ -81,7 +75,7 @@ for f in fcListCur:
 ##        arcpy.TableSelect_analysis(tblTempIdenSum + f, outGDB + "tbl_final_NTIA_duplicates_middle_mile", "\"FREQUENCY\" >= 2")
 ##
     arcpy.MakeTableView_management (f, "temp_current_" + f,"","","")
-    arcpy.CopyRows_management ("temp_current_" + f, outGDB + "tbl_view_current_" + f)
+    arcpy.CopyRows_management ("temp_current_" + f, outGDB + "\\tbl_view_current_" + f)
 ##    arcpy.CheckGeometry_management (f, outGDB + "tbl_temp_chk_geo" + f)
 
 # List the Feature Classes in the Previous NTIA Deliverable and create tempoarary tables in the QAQC file geodatabase
@@ -89,7 +83,7 @@ arcpy.env.workspace = inNTIAPrev
 fcListPrev = arcpy.ListFeatureClasses ("","", "NATL_Broadband_Map")
 for fc in fcListPrev:
     arcpy.MakeTableView_management (fc, "temp_previous_" + fc,"","","")
-    arcpy.CopyRows_management ("temp_previous_" + fc, outGDB + "tbl_view_previous_" + fc)
+    arcpy.CopyRows_management ("temp_previous_" + fc, outGDB + "\\tbl_view_previous_" + fc)
 
 # Set the Environment Workspace to the QAQC File Geodatabase
 arcpy.env.workspace = outGDB
