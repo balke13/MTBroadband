@@ -51,7 +51,8 @@ now = datetime.datetime.now()
 
 # Local variables:
 JoinTable = "Z:\\Broadband\\BBMT\\Provider_Update\\mt_provider_table.csv"
-PathFGDB = "Z:\\Broadband\\BBMT\\NTIA_Deliverables\\Review\\"
+#PathFGDB = "Z:\\Broadband\\BBMT\\NTIA_Deliverables\\Review\\"
+PathFGDB = "C:\\Data\\Broadband\\BBMT\\"
 NameFGDB = "ParsedNTIAData_" + now.strftime("%Y%m%d") + ".gdb"
 OutFGDB = PathFGDB + NameFGDB + "\\"
 fcNTIABlks = OutFGDB + "fc_ntia_blks"
