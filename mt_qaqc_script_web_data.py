@@ -13,17 +13,11 @@
 import arcpy, os, sys, string
 
 # Script arguments
-inWebCur = arcpy.GetParameterAsText(0)
-if inWebCur == '#' or not curProvTbl:
-    inWebCur = "Z:\\Broadband\\BBMT\\Website_Data\\Submission_20130930\\MT_Web_Data_20130930.gdb\\" # provide a default value if unspecified
+inWebCur = arcpy.GetParameterAsText(0) + "\\"
 
-inWebPrev = arcpy.GetParameterAsText(1)
-if inWebPrev == '#' or not curProvTbl:
-    inWebPrev = "Z:\\Broadband\\BBMT\\Website_Data\\Submission_20130930\\MT_Web_Data_20130930.gdb\\" # provide a default value if unspecified
+inWebPrev = arcpy.GetParameterAsText(1) + "\\"
 
-outGDB = arcpy.GetParameterAsText(2)
-if outGDB == '#' or not curProvTbl:
-    outGDB = "Z:\\Broadband\\BBMT\\Provider_Update\\201309\\MT_QAQC_20130930.gdb\\" # provide a default value if unspecified
+outGDB = arcpy.GetParameterAsText(2) + "\\"
 
 # Local variables:
 calcFldProvTotSpd = "!PROVNAME! + \"_\" + !FRN! + \"_\" + str(!TRANSTECH!) + \"_\" + str(!SPECTRUM!) + \"_\" + !MAXADDOWN! + \"_\" + !MAXADUP!"
