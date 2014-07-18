@@ -11,38 +11,56 @@
 
 # Import system modules
 import arcpy, os, sys, string
+arcpy.env.overwriteOutput = True
+
+################################################################################
+def createSumTbl (table):
+    # Calculate the Attribute Fields for the Cloned DCN Data
+    arcpy.Statistics_analysis(table, table + "_area_v1", [["Shape_Area", "SUM", ]], "SUMAREA")
+    arcpy.Statistics_analysis(table, table + "_provtot_v1", [["SUMPROV", "FIRST", ]], "SUMPROV")
+    arcpy.AddField_management (table + "_area_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
+    arcpy.AddField_management (table + "_area_v1", "AREADBL", "DOUBLE", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+    arcpy.CalculateField_management(table + "_area_v1", "AREADBL", "round(!SUM_Shape_Area!/1000000, 0)", "PYTHON", "")
+    arcpy.CalculateField_management (table + "_area_v1", "SUMAREA", calcSumFldArea, "PYTHON", "")
+    arcpy.AddField_management (table + "_provtot_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
+    if tblName == "tbl_temp_web_prov_tot_cur":
+        arcpy.TableToTable_conversion (table + "_area_v1", outFolder, tblFinalSum )
+        arcpy.CalculateField_management (table + "_area_v1", "VERSION", "'" + "CURRENT" + "'", "PYTHON")
+        arcpy.CalculateField_management (table + "_provtot_v1", "VERSION", "'" + "CURRENT" + "'", "PYTHON")
+
+    elif tblName == "tbl_temp_web_prov_tot_prev":
+        arcpy.CalculateField_management (table + "_area_v1", "VERSION", "'" + "PREVIOUS" + "'", "PYTHON")
+        arcpy.CalculateField_management (table + "_provtot_v1", "VERSION", "'" + "PREVIOUS" + "'", "PYTHON")
+################################################################################
 
 # Script arguments
-inWebCur = arcpy.GetParameterAsText(0) + "\\"
-
-inWebPrev = arcpy.GetParameterAsText(1) + "\\"
-
-outGDB = arcpy.GetParameterAsText(2) + "\\"
+inWebCur = arcpy.GetParameterAsText(0)
+inWebPrev = arcpy.GetParameterAsText(1)
+outGDB = arcpy.GetParameterAsText(2)
+outFolder = arcpy.GetParameterAsText (3)
 
 # Local variables:
+tblWebCur = "tbl_temp_web_prov_tot_cur"
+tblWebPrev = "tbl_temp_web_prov_tot_prev"
 calcFldProvTotSpd = "!PROVNAME! + \"_\" + !FRN! + \"_\" + str(!TRANSTECH!) + \"_\" + str(!SPECTRUM!) + \"_\" + !MAXADDOWN! + \"_\" + !MAXADUP!"
 calcSumFldArea = "!SUMAREA! + \"_\" + str(!AREADBL!)"
 calcSumFldProv = "!PROVNAME! + \"_\" + !FRN! + \"_\" + str(!TRANSTECH!) + \"_\" + str(!SPECTRUM!)"
 whereClause = '"FREQUENCY" = 1'
 
-inWebProvTotCur = inWebCur + "Web_ProviderAndTechnology"
-inWebProvTotPrev = inWebPrev + "Web_ProviderAndTechnology"
-
-tblWebCurSum = "tbl_final_WEB_current_summary"
-
-tblWebCurPrevAreaMrg = outGDB + "tbl_temp_web_prov_tot_area_merge"
-tblWebCurPrevSumArea = outGDB + "tbl_temp_web_prov_tot_area_merge_summary"
-tblView1 = outGDB + "tbl_temp_web_prov_tot_area_merge_summary_view"
-tblChgWebArea = outGDB + "tbl_final_WEB_change_detection_prov_tot_speed_area"
-
-tblWebCurPrevProvTotMrg = outGDB + "tbl_temp_web_prov_tot_merge"
-tblWebCurPrevSumProvTot = outGDB + "tbl_temp_web_prov_tot_merge_summary"
-tblView2 = outGDB + "tbl_temp_web_prov_tot_merge_summary_view"
-tblChgWebProvTot = outGDB + "tbl_final_WEB_change_detection_prov_tot"
+tblFinalSum = "tbl_final_WEB_current_summary.dbf"
+tblTempArea1 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_area_merge"
+tblTempArea2 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_area_merge_summary"
+tblTempArea3 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_area_merge_summary_sort"
+tblTempArea4 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_area_merge_summary_sort_view"
+tblFinalChgArea = outFolder + os.path.sep + "tbl_final_WEB_change_detection_prov_tot_speed_area.dbf"
+tempTblProv1 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_merge"
+tempTblProv2 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_merge_summary"
+tempTblProv3 = outGDB + os.path.sep + "tbl_temp_web_prov_tot_merge_summary_view"
+tblFinalChgProvTot = outFolder + os.path.sep + "tbl_final_WEB_change_detection_prov_tot.dbf"
 
 #Create a Table of the current and previous Web_ProviderAndTechnology Layers
-arcpy.TableToTable_conversion (inWebProvTotCur, outGDB, "tbl_temp_web_prov_tot_cur")
-arcpy.TableToTable_conversion (inWebProvTotPrev, outGDB, "tbl_temp_web_prov_tot_prev")
+arcpy.TableToTable_conversion (inWebCur, outGDB, tblWebCur)
+arcpy.TableToTable_conversion (inWebPrev, outGDB, tblWebPrev)
 
 arcpy.env.workspace = outGDB
 tblWebList = arcpy.ListTables ("tbl_temp_web_prov_tot_*", "")
@@ -53,40 +71,22 @@ for tbl in tblWebList:
     arcpy.CalculateField_management (tbl, "SUMAREA", calcFldProvTotSpd, "PYTHON", "")
     arcpy.AddField_management (tbl, "SUMPROV", "TEXT", "", "", "150", "", "NULLABLE", "NON_REQUIRED", "")
     arcpy.CalculateField_management (tbl, "SUMPROV", calcSumFldProv, "PYTHON", "")
-    if tblName == "tbl_temp_web_prov_tot_cur":
-        arcpy.Statistics_analysis(tbl, tbl + "_area_v1", [["Shape_Area", "SUM", ]], "SUMAREA")
-        arcpy.TableToTable_conversion (tbl + "_area_v1", outGDB, tblWebCurSum )
-        arcpy.Statistics_analysis(tbl, tbl + "_provtot_v1", [["SUMPROV", "FIRST", ]], "SUMPROV")
-        arcpy.AddField_management (tbl + "_area_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management (tbl + "_area_v1", "VERSION", "'" + "CURRENT" + "'", "PYTHON")
-        arcpy.AddField_management (tbl + "_area_v1", "AREADBL", "DOUBLE", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management(tbl + "_area_v1", "AREADBL", "round(!SUM_Shape_Area!/1000000, 0)", "PYTHON", "")
-        arcpy.CalculateField_management (tbl + "_area_v1", "SUMAREA", calcSumFldArea, "PYTHON", "")
-        arcpy.AddField_management (tbl + "_provtot_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management (tbl + "_provtot_v1", "VERSION", "'" + "CURRENT" + "'", "PYTHON")
-
-    elif tblName == "tbl_temp_web_prov_tot_prev":
-        arcpy.Statistics_analysis(tbl, tbl + "_area_v1", [["Shape_Area", "SUM", ]], "SUMAREA")
-        arcpy.Statistics_analysis(tbl, tbl + "_provtot_v1", [["SUMPROV", "FIRST", ]], "SUMPROV")
-        arcpy.AddField_management (tbl + "_area_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management (tbl + "_area_v1", "VERSION", "'" + "PREVIOUS" + "'", "PYTHON")
-        arcpy.AddField_management (tbl + "_area_v1", "AREADBL", "DOUBLE", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management(tbl + "_area_v1", "AREADBL", "round(!SUM_Shape_Area!/1000000, 0)", "PYTHON", "")
-        arcpy.CalculateField_management (tbl + "_area_v1", "SUMAREA", calcSumFldArea, "PYTHON", "")
-        arcpy.AddField_management (tbl + "_provtot_v1", "VERSION", "TEXT", "", "", "50", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.CalculateField_management (tbl + "_provtot_v1", "VERSION", "'" + "PREVIOUS" + "'", "PYTHON")
+    createSumTbl (tbl)
 
 #Create the final web change detection table by Provider TOT Speed Area
-arcpy.Merge_management (["tbl_temp_web_prov_tot_cur_area_v1", "tbl_temp_web_prov_tot_prev_area_v1"], tblWebCurPrevAreaMrg)
-arcpy.Statistics_analysis(tblWebCurPrevAreaMrg, tblWebCurPrevSumArea, [["VERSION", "FIRST"]], "SUMAREA")
-arcpy.MakeTableView_management (tblWebCurPrevSumArea, tblView1, whereClause, "", "")
-arcpy.CopyRows_management(tblView1, tblChgWebArea)
+arcpy.Merge_management (["tbl_temp_web_prov_tot_cur_area_v1", "tbl_temp_web_prov_tot_prev_area_v1"], tblTempArea1)
+arcpy.Statistics_analysis(tblTempArea1, tblTempArea2, [["VERSION", "FIRST"]], "SUMAREA")
+arcpy.AddField_management (tblTempArea2, "Sort", "TEXT", "", "", "200", "", "NULLABLE", "NON_REQUIRED", "")
+arcpy.CalculateField_management (tblTempArea2, "SORT", "!SUMAREA!.rpartition(\"_\")[0] + \"_\" + !FIRST_VERSION!", "PYTHON", "")
+arcpy.Sort_management (tblTempArea2, tblTempArea3, [["SORT", "ASCENDING"]])
+arcpy.MakeTableView_management (tblTempArea3, tblTempArea4, whereClause, "", "")
+arcpy.CopyRows_management(tblTempArea4, tblFinalChgArea)
 
 #Create the final web change detection table by Provider TOT
-arcpy.Merge_management (["tbl_temp_web_prov_tot_cur_provtot_v1", "tbl_temp_web_prov_tot_prev_provtot_v1"], tblWebCurPrevProvTotMrg)
-arcpy.Statistics_analysis(tblWebCurPrevProvTotMrg, tblWebCurPrevSumProvTot, [["VERSION", "FIRST"]], "SUMPROV")
-arcpy.MakeTableView_management (tblWebCurPrevSumProvTot, tblView2, whereClause, "", "")
-arcpy.CopyRows_management(tblView2, tblChgWebProvTot)
+arcpy.Merge_management (["tbl_temp_web_prov_tot_cur_provtot_v1", "tbl_temp_web_prov_tot_prev_provtot_v1"], tempTblProv1)
+arcpy.Statistics_analysis(tempTblProv1, tempTblProv2, [["VERSION", "FIRST"]], "SUMPROV")
+arcpy.MakeTableView_management (tempTblProv2, tempTblProv3, whereClause, "", "")
+arcpy.CopyRows_management(tempTblProv3, tblFinalChgProvTot)
 
 # Delete the temporary tables
 tblTemp = arcpy.ListTables("tbl_temp*", "")
