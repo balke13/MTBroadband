@@ -8,10 +8,11 @@
 
 # Import arcpy module
 import arcpy, os, sys, string, zipfile, zlib
+arcpy.env.overwriteOutput = True
 
 # Local variables:
 InputDataset = arcpy.GetParameterAsText(0)
-DataPath = "Z:\\Broadband\\BBMT\\Provider_Update\\201403"
+DataPath = "Z:\\Broadband\\BBMT\\Provider_Update\\201409"
 fieldName = "TOTMaxAddDownTemp"
 
 # Process: Get the InputDataset File Name
@@ -19,8 +20,8 @@ InputFileName = os.path.basename(InputDataset).rstrip(os.path.splitext(InputData
 OutputProject = DataPath + "\\Scratch.gdb\\" + InputFileName + "_Project"
 OutputShapefile = DataPath + "\\Shapefiles\\"
 OutputZipFiles = DataPath + "\\ZipFiles\\"
-OutputFCLocation = DataPath + "\\MTUpdate20140401.gdb\\Provider_Coverage\\"
-OutTable = DataPath + "\\MTUpdate20140401.gdb\\" + "tbl_CheckGeo_" + InputFileName
+OutputFCLocation = DataPath + "\\MTUpdate20140930.gdb\\Provider_Coverage\\"
+OutTable = DataPath + "\\MTUpdate20140930.gdb\\" + "tbl_CheckGeo_" + InputFileName
 
 # Create a copy of the input FeatureClass
 arcpy.FeatureClassToFeatureClass_conversion(InputDataset, OutputFCLocation, InputFileName,"")
